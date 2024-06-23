@@ -235,17 +235,17 @@ async def login_password_message(msg: Message) -> None:
     # print("hello =================")
     # await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
 
-@dp.message_handler(content_types=ContentType.SUCCESSFUL_PAYMENT)
-async def process_successful_payment(msg: Message) -> None:
-    data = state.get_data(msg.chat.id)
-    lang = data.get("LANG")
-    phone = data.get("PHONE_NUMBER")
-    s = state.State("HOME_MENU", {"LANG": lang, "role": "STUDENT", "PHONE_NUMBER": phone}, msg.chat.id)
-    state.append(s)
-    text1 = language.Language.get(lang, "SUCCESSFULLY_PAID")
-    text2 = language.Language.get(lang, "HOME_MENU")
-    await bot.send_message(msg.chat.id, text1)
-    await bot.send_message(msg.chat.id, text2, reply_markup=keyboard.get_home_student_menu(lang))
+# @dp.message_handler(content_types=ContentType.SUCCESSFUL_PAYMENT)
+# async def process_successful_payment(msg: Message) -> None:
+#     data = state.get_data(msg.chat.id)
+#     lang = data.get("LANG")
+#     phone = data.get("PHONE_NUMBER")
+#     s = state.State("HOME_MENU", {"LANG": lang, "role": "STUDENT", "PHONE_NUMBER": phone}, msg.chat.id)
+#     state.append(s)
+#     text1 = language.Language.get(lang, "SUCCESSFULLY_PAID")
+#     text2 = language.Language.get(lang, "HOME_MENU")
+#     await bot.send_message(msg.chat.id, text1)
+#     await bot.send_message(msg.chat.id, text2, reply_markup=keyboard.get_home_student_menu(lang))
 
 @dp.message_handler(filters.CheckState("PAYMENT_MENU"), filters.CheckWord("PROMO_CODE"))
 async def payment_menu_promo_code_message(msg: Message) -> None:

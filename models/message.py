@@ -49,7 +49,7 @@ class Message(Base):
                 msg_group = MessageGroup.get(msg_group_user[3])
                 client: TelegramClient = await get_client(phone)
                 await client.connect()
-                await client.send_message(msg_group[2], mess)
+                await client.send_message(msg_group[3], mess)
                 await client.disconnect()
 
     @staticmethod

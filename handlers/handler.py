@@ -21,7 +21,7 @@ async def send_message_to_groups_30():
                 if msg_group_user[2] == msg[0]:
                     msg_group = message_group.MessageGroup.get(msg_group_user[3])
                     async with TelegramClient(msg[7], api_id=24963729, api_hash="1bab3b9c3675227b43619d2175bd6990") as client:
-                        await client.send_message(msg_group[2], msg[2])
+                        await client.send_message(msg_group[3], msg[2])
                         await client.disconnect()
     return None
 
@@ -34,7 +34,7 @@ async def send_message_to_groups_45():
                 if msg_group_user[2] == msg[0]:
                     msg_group = message_group.MessageGroup.get(msg_group_user[3])
                     async with TelegramClient(msg[7], api_id=24963729, api_hash="1bab3b9c3675227b43619d2175bd6990") as client:
-                        await client.send_message(msg_group[2], msg[2])
+                        await client.send_message(msg_group[3], msg[2])
                         await client.disconnect()
     return None
     
@@ -47,7 +47,7 @@ async def send_message_to_groups_60():
                 if msg_group_user[2] == msg[0]:
                     msg_group = message_group.MessageGroup.get(msg_group_user[3])
                     async with TelegramClient(msg[7], api_id=24963729, api_hash="1bab3b9c3675227b43619d2175bd6990") as client:
-                        await client.send_message(msg_group[2], msg[2])
+                        await client.send_message(msg_group[3], msg[2])
                         await client.disconnect()
     return None
 
@@ -323,31 +323,43 @@ async def edit_group_student(call: CallbackQuery) -> None:
     lang = data.get("LANG")
     s = state.State("EDIT_GROUP", data, call.message.chat.id)
     state.append(s)
-    text1 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/RHNZfUlgvrw4NjMy"
-    text2 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/XcVvS4iCkjgxODIy"
-    text3 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/JpYEd0NARAg1NGIy"
-    text4 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/RvBrbkj_ygAwODk6"
+    text1 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/YaWgGY46GNU0NjEy"
+    text2 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/GHB25AV4jg00OTcy"
+    text3 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/GpVC1501i-c5Zjcy"
+    text4 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/ocFHi85yVyM0YmZi"
     await bot.send_message(call.message.chat.id, text1, reply_markup=keyboard.remove_menu)
     await bot.send_message(call.message.chat.id, text2, reply_markup=keyboard.remove_menu)
     await bot.send_message(call.message.chat.id, text3, reply_markup=keyboard.remove_menu)
     await bot.send_message(call.message.chat.id, text4, reply_markup=keyboard.get_done_student_menu(lang))
 
 @dp.message_handler(filters.CheckStateList(["EDIT_GROUP", "JOIN_GROUP"]), filters.CheckWord("DONE"))
-async def done_student(msg: Message) -> None:
+async def select_folder(msg: Message) -> None:
+    data = state.get_data(msg.chat.id)
+    lang = data.get("LANG")
+    s = state.State("SELECT_FOLDER", data, msg.chat.id)
+    state.append(s)
+    text = language.Language.get(lang, "SELECT_FOLDER")
+    await bot.send_message(msg.chat.id, text, reply_markup=keyboard.get_folder())
+
+@dp.message_handler(filters.CheckState("SELECT_FOLDER"), lambda msg: msg.text in ["Skylog-1", "Skylog-2", "Skylog-3", "Skylog-4"])
+async def select_fol(msg: Message) -> None:
     data = state.get_data(msg.chat.id)
     data.update({"PAGE": 0})
+    data.update({"folder": msg.text})
     lang = data.get("LANG")
     s = state.State("GROUP_BTN", data, msg.chat.id)
     state.append(s)
-    my_groups = await utils.get_my_groups(msg.chat.id)
+    my_groups = await utils.get_my_groups(msg.chat.id, msg.text)
     text = language.Language.get(lang, "CORRECT_OR_INCORRECT")
     await bot.send_message(msg.chat.id, text, reply_markup=await keyboard.get_add_group_student_menu(lang, 0, msg.chat.id, my_groups))
-        
+    await bot.send_message(msg.chat.id, language.Language.get(lang, "SELECT_THIS_GROUPS"), reply_markup=keyboard.get_done_student_menu(lang))
+
 @dp.callback_query_handler(filters.CheckStateWithCall("GROUP_BTN"))
 async def group_btn_student(call: CallbackQuery) -> None:
-    my_groups = await utils.get_my_groups(call.message.chat.id)
     data = state.get_data(call.message.chat.id)
     lang = data.get("LANG")
+    folder = data.get("folder")
+    my_groups = await utils.get_my_groups(call.message.chat.id, folder)
     if call.data in my_groups:
         group_list:list = data.get("GROUP_LIST", [])
         if call.data in group_list:
@@ -551,7 +563,8 @@ async def search_cargo_student(msg: Message) -> None:
     message_page = data.get("MESSAGE_PAGE")
     
     date = datetime.now() - timedelta(days=1)
-    message_group_list = await utils.get_my_groups(msg.chat.id)
+    folder = data.get("folder", "Skylog-1")
+    message_group_list = await utils.get_my_groups(msg.chat.id, folder)
     mes_list = []
     async with TelegramClient(session=phone, api_id=24963729, api_hash="1bab3b9c3675227b43619d2175bd6990") as client:
         await client.connect()
@@ -604,7 +617,8 @@ async def search_cargo_next_student(call: CallbackQuery) -> None:
     cargo_type = cargo_type.lower()
 
     date = datetime.now() - timedelta(days=1)
-    message_group_list = await utils.get_my_groups(call.message.chat.id)
+    folder = data.get("folder", "Skylog-1")
+    message_group_list = await utils.get_my_groups(call.message.chat.id, folder)
 
     mes_list = []
     async with TelegramClient(session=phone, api_id=24963729, api_hash="1bab3b9c3675227b43619d2175bd6990") as client:
@@ -658,7 +672,8 @@ async def search_cargo_prev_student(call: CallbackQuery) -> None:
     message_page = data.get("MESSAGE_PAGE")
 
     date = datetime.now() - timedelta(days=1)
-    message_group_list = await utils.get_my_groups(call.message.chat.id)
+    folder = data.get("folder", "Skylog-1")
+    message_group_list = await utils.get_my_groups(call.message.chat.id, folder)
 
     mes_list = []
     async with TelegramClient(session=phone, api_id=24963729, api_hash="1bab3b9c3675227b43619d2175bd6990") as client:
@@ -819,10 +834,10 @@ async def join_group_menu_student(msg: Message) -> None:
     lang = data.get("LANG")
     s = state.State("JOIN_GROUP", data, msg.chat.id)
     state.append(s)
-    text1 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/RHNZfUlgvrw4NjMy"
-    text2 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/XcVvS4iCkjgxODIy"
-    text3 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/JpYEd0NARAg1NGIy"
-    text4 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/RvBrbkj_ygAwODk6"
+    text1 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/YaWgGY46GNU0NjEy"
+    text2 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/GHB25AV4jg00OTcy"
+    text3 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/GpVC1501i-c5Zjcy"
+    text4 = language.Language.get(lang, "SUBSCRIBE")+"\n\n" + "https://t.me/addlist/ocFHi85yVyM0YmZi"
     await bot.send_message(msg.chat.id, text1, reply_markup=keyboard.remove_menu)
     await bot.send_message(msg.chat.id, text2, reply_markup=keyboard.remove_menu)
     await bot.send_message(msg.chat.id, text3, reply_markup=keyboard.remove_menu)

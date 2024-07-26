@@ -131,6 +131,18 @@ def get_done_student_menu(lang: str) -> ReplyKeyboardMarkup:
     
     return done_student_menu
 
+def get_folder() -> ReplyKeyboardMarkup:
+    folder_menu = ReplyKeyboardMarkup(resize_keyboard=True)
+
+    skylog_1 = KeyboardButton("Skylog-1")
+    skylog_2 = KeyboardButton("Skylog-2")
+    skylog_3 = KeyboardButton("Skylog-3")
+    skylog_4 = KeyboardButton("Skylog-4")
+    folder_menu.add(skylog_1, skylog_2)
+    folder_menu.add(skylog_3, skylog_4)
+    
+    return folder_menu
+
 def get_history_back_menu(lang: str) -> ReplyKeyboardMarkup:
     history_back_menu = ReplyKeyboardMarkup(resize_keyboard=True)
 

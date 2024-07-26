@@ -7,6 +7,7 @@ class MessageGroup(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer(), primary_key=True)
 
     name = sqlalchemy.Column(sqlalchemy.Text(), nullable=False)
+    folder = sqlalchemy.Column(sqlalchemy.String(length=100))
     link = sqlalchemy.Column(sqlalchemy.Text(), nullable=False)
     is_active = sqlalchemy.Column(sqlalchemy.Boolean(), default=True)
 
@@ -25,9 +26,9 @@ class MessageGroup(Base):
         return res.fetchall()
     
     @staticmethod
-    def list() -> list:
+    def list(folder: str) -> list:
         message_group = MessageGroup.metadata.tables.get("message_group")
-        sel = message_group.select().where(MessageGroup.is_active == True, MessageGroup.is_deleted == False)
+        sel = message_group.select().where(MessageGroup.is_active == True, MessageGroup.is_deleted == False, MessageGroup.folder == folder)
         conn = engine.connect()
         res = conn.execute(sel)
         return res.fetchall()
